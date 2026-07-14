@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="vi">
+ <head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260713-23-9a84838"}');</script><script src="/_sdk/f432b76fb310b513.telemetry_sdk.js" integrity="sha512-9FJQ55EKmmqhyyik8BhrMVfm0+iYYfb8uOlRsjtkxJMEI97qOVEI4PnHohDjQAtvAep0IOEpdQ64eki0sz62ug=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Công Việc</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+        * { font-family: 'DM Sans', sans-serif; }
+        .gradient-accent { background: linear-gradient(135deg, #28A745, #1E3A8A); }
+        .card-shadow { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2); }
+        .task-row { transition: background 0.15s ease; }
+        .task-row:hover { background: #f1f5f9; }
+        .priority-high { color: #ef4444; background: #fef2f2; }
+        .priority-medium { color: #f59e0b; background: #fffbeb; }
+        .priority-low { color: #10b981; background: #ecfdf5; }
+        .status-done { color: #10b981; background: #ecfdf5; }
+        .status-progress { color: #3b82f6; background: #eff6ff; }
+        .status-todo { color: #64748b; background: #f1f5f9; }
+        .ai-response { line-height: 1.7; }
+        .ai-response h1, .ai-response h2, .ai-response h3 { font-weight: 700; margin: 0.8em 0 0.4em; }
+        .ai-response ul, .ai-response ol { padding-left: 1.5em; margin: 0.5em 0; }
+        .ai-response li { margin: 0.3em 0; }
+        .ai-response p { margin: 0.5em 0; }
+    </style>
+  <script src="/_sdk/9432170dbd2ae0df.resizing_sdk.js" type="text/javascript" integrity="sha512-FeT+58sb1f9ejWPWFjCbJvTT+SDwGV+ngrHUnlO7TWEOoqwOLj6p256kO3vOL7DIWl1cIgrobiof8v2bOigwPg=="></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen bg-slate-50"><!-- Header -->
+  <header data-template-id="header-section" class="canva-header gradient-accent text-white sticky top-0 z-40">
+   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <h1 data-template-id="app-title" class="canva-text text-xl font-bold flex items-center gap-2"></h1>
+    <div class="flex items-center gap-2"><button id="ai-panel-toggle" class="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition" title="AI Assistant"> <i data-lucide="bot" class="w-5 h-5"></i> </button> <button id="settings-toggle" data-template-id="settings-btn" class="canva-button p-2 rounded-lg bg-white/20 hover:bg-white/30 transition" title="Cài đặt"> </button> <button id="export-btn" class="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition" title="Xuất dữ liệu"> <i data-lucide="download" class="w-5 h-5"></i> </button> <label class="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition cursor-pointer" title="Nhập dữ liệu"> <i data-lucide="upload" class="w-5 h-5"></i> <input type="file" id="import-input" accept=".json" class="hidden"> </label>
+    </div>
+   </div>
+  </header>
+  <main class="max-w-7xl mx-auto px-4 py-6"><!-- Stats -->
+   <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card bg-white rounded-2xl p-4 card-shadow">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center"><i data-lucide="layers" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+       <p data-template-id="stat-total-label" class="canva-text text-xs text-slate-500"></p>
+       <p id="stat-total" class="text-2xl font-bold text-slate-800">0</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat-card bg-white rounded-2xl p-4 card-shadow">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center"><i data-lucide="plus-circle" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+       <p data-template-id="stat-new-label" class="canva-text text-xs text-slate-500"></p>
+       <p id="stat-new" class="text-2xl font-bold text-slate-800">0</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat-card bg-white rounded-2xl p-4 card-shadow">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center"><i data-lucide="check-circle" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+       <p data-template-id="stat-done-label" class="canva-text text-xs text-slate-500"></p>
+       <p id="stat-done" class="text-2xl font-bold text-slate-800">0</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat-card bg-white rounded-2xl p-4 card-shadow">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center"><i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+       <p data-template-id="stat-pending-label" class="canva-text text-xs text-slate-500"></p>
+       <p id="stat-pending" class="text-2xl font-bold text-slate-800">0</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Toolbar -->
+   <section class="bg-white rounded-2xl card-shadow p-4 mb-4 flex flex-wrap gap-3 items-center"><button id="add-task-btn" data-template-id="add-task-btn" class="canva-button gradient-accent text-white px-4 py-2 rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2"> </button>
+    <div class="flex-1 min-w-[200px]"><input data-template-id="search-input" id="search-input" type="text" class="canva-input w-full px-4 py-2 rounded-xl border border-slate-200 text-sm">
+    </div><select id="filter-status" class="px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="">Tất cả trạng thái</option> <option value="todo">Cần làm</option> <option value="progress">Đang làm</option> <option value="done">Hoàn thành</option> </select> <select id="filter-priority" class="px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="">Tất cả ưu tiên</option> <option value="high">Cao</option> <option value="medium">Trung bình</option> <option value="low">Thấp</option> </select>
+   </section><!-- Task List -->
+   <section data-template-id="task-table-section" class="canva-section bg-white rounded-2xl card-shadow overflow-hidden">
+    <div class="overflow-x-auto">
+     <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+       <tr>
+        <th class="px-4 py-3 text-left font-medium cursor-pointer" data-sort="title">Tiêu đề ↕</th>
+        <th class="px-4 py-3 text-left font-medium hidden md:table-cell">Danh mục</th>
+        <th class="px-4 py-3 text-left font-medium">Trạng thái</th>
+        <th class="px-4 py-3 text-left font-medium">Ưu tiên</th>
+        <th class="px-4 py-3 text-left font-medium hidden lg:table-cell">Người thực hiện</th>
+        <th class="px-4 py-3 text-left font-medium hidden lg:table-cell">Hạn</th>
+        <th class="px-4 py-3 text-center font-medium">Thao tác</th>
+       </tr>
+      </thead>
+      <tbody id="task-tbody"></tbody>
+     </table>
+    </div>
+    <div id="empty-state" class="hidden py-12 text-center"><i data-lucide="inbox" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+     <p data-template-id="empty-state-text" class="canva-text text-slate-400"></p>
+    </div>
+    <div id="pagination" class="flex items-center justify-between px-4 py-3 border-t border-slate-100"><span id="page-info" class="text-xs text-slate-500"></span>
+     <div class="flex gap-1"><button id="prev-page" class="px-3 py-1 rounded-lg border border-slate-200 text-sm hover:bg-slate-50 disabled:opacity-40" disabled>←</button> <button id="next-page" class="px-3 py-1 rounded-lg border border-slate-200 text-sm hover:bg-slate-50 disabled:opacity-40" disabled>→</button>
+     </div>
+    </div>
+   </section>
+  </main><!-- AI Panel (Slide-over) -->
+  <div id="ai-panel" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+   <div class="gradient-accent text-white p-4 flex items-center justify-between">
+    <h2 data-template-id="ai-panel-title" class="canva-text font-bold flex items-center gap-2"></h2><button id="ai-panel-close" class="p-1 rounded hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+   </div>
+   <div class="p-4 flex-1 overflow-y-auto">
+    <div class="space-y-3 mb-4"><button class="ai-prompt-btn w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:border-green-400 hover:bg-green-50 transition text-sm" data-prompt="analyze">📊 Phân tích tổng quan công việc</button> <button class="ai-prompt-btn w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:border-green-400 hover:bg-green-50 transition text-sm" data-prompt="suggest">💡 Gợi ý ưu tiên công việc</button> <button class="ai-prompt-btn w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:border-green-400 hover:bg-green-50 transition text-sm" data-prompt="summary">📝 Tạo báo cáo tuần</button>
+    </div>
+    <div id="ai-loading" class="hidden text-center py-8">
+     <div class="inline-block w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+     <p class="text-sm text-slate-500 mt-2">Đang phân tích...</p>
+    </div>
+    <div id="ai-response" class="ai-response text-sm text-slate-700 hidden"></div>
+   </div>
+  </div><!-- Task Modal -->
+  <div id="task-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+   <div class="bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto fade-in card-shadow">
+    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+     <h3 id="modal-title" class="font-bold text-lg text-slate-800">Thêm công việc</h3><button id="modal-close" class="p-1 rounded hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5 text-slate-500"></i></button>
+    </div>
+    <form id="task-form" class="p-5 space-y-4"><input type="hidden" id="task-id">
+     <div><label for="task-title" class="block text-sm font-medium text-slate-700 mb-1">Tiêu đề *</label> <input id="task-title" type="text" required class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm" placeholder="Nhập tiêu đề công việc">
+     </div>
+     <div class="grid grid-cols-2 gap-3">
+      <div><label for="task-category" class="block text-sm font-medium text-slate-700 mb-1">Danh mục</label> <select id="task-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="general">Chung</option> <option value="dev">Phát triển</option> <option value="design">Thiết kế</option> <option value="marketing">Marketing</option> <option value="meeting">Họp</option> </select>
+      </div>
+      <div><label for="task-priority" class="block text-sm font-medium text-slate-700 mb-1">Ưu tiên</label> <select id="task-priority" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="low">Thấp</option> <option value="medium">Trung bình</option> <option value="high">Cao</option> </select>
+      </div>
+     </div>
+     <div class="grid grid-cols-2 gap-3">
+      <div><label for="task-status" class="block text-sm font-medium text-slate-700 mb-1">Trạng thái</label> <select id="task-status" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="todo">Cần làm</option> <option value="progress">Đang làm</option> <option value="done">Hoàn thành</option> </select>
+      </div>
+      <div><label for="task-due" class="block text-sm font-medium text-slate-700 mb-1">Hạn hoàn thành</label> <input id="task-due" type="date" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+      </div>
+     </div>
+     <div><label for="task-assigned" class="block text-sm font-medium text-slate-700 mb-1">Người thực hiện</label> <input id="task-assigned" type="text" class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm" placeholder="Tên người thực hiện">
+     </div>
+     <div><label for="task-desc" class="block text-sm font-medium text-slate-700 mb-1">Mô tả</label> <textarea id="task-desc" rows="3" class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm resize-none" placeholder="Mô tả chi tiết..."></textarea>
+     </div><button type="submit" class="w-full gradient-accent text-white py-3 rounded-xl font-medium hover:opacity-90 transition">Lưu công việc</button>
+    </form>
+   </div>
+  </div><!-- Settings Modal -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+   <div class="bg-white rounded-2xl w-full max-w-md mx-4 fade-in card-shadow">
+    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+     <h3 class="font-bold text-lg text-slate-800">Cài đặt AI</h3><button id="settings-close" class="p-1 rounded hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5 text-slate-500"></i></button>
+    </div>
+    <div class="p-5 space-y-4">
+     <div><label for="api-key-input" class="block text-sm font-medium text-slate-700 mb-1">Gemini API Key</label>
+      <div class="relative"><input id="api-key-input" type="password" class="w-full px-4 py-2 pr-10 rounded-xl border border-slate-200 text-sm" placeholder="Nhập API Key của bạn"> <button id="toggle-key-vis" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><i data-lucide="eye" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">Lấy key tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline">Google AI Studio</a></p>
+     </div>
+     <div><label for="model-select" class="block text-sm font-medium text-slate-700 mb-1">Model AI</label> <select id="model-select" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"> <option value="gemini-2.5-flash">Gemini 2.5 Flash</option> <option value="gemini-2.0-flash">Gemini 2.0 Flash</option> <option value="gemini-1.5-pro">Gemini 1.5 Pro</option> </select>
+     </div><button id="save-settings" class="w-full gradient-accent text-white py-3 rounded-xl font-medium hover:opacity-90 transition">Lưu cài đặt</button>
+    </div>
+   </div>
+  </div><!-- Delete Confirmation -->
+  <div id="delete-confirm" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+   <div class="bg-white rounded-2xl w-full max-w-sm mx-4 p-6 text-center fade-in card-shadow">
+    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i>
+    </div>
+    <h3 class="font-bold text-lg text-slate-800 mb-2">Xóa công việc?</h3>
+    <p class="text-sm text-slate-500 mb-5">Hành động này không thể hoàn tác.</p>
+    <div class="flex gap-3"><button id="delete-cancel" class="flex-1 py-2 rounded-xl border border-slate-200 font-medium hover:bg-slate-50 transition">Hủy</button> <button id="delete-ok" class="flex-1 py-2 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition">Xóa</button>
+    </div>
+   </div>
+  </div><!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-[999] hidden">
+   <div class="px-4 py-3 rounded-xl card-shadow text-sm font-medium text-white flex items-center gap-2 fade-in"></div>
+  </div>
+  <script src="/_sdk/0f620e7ef74834b7.editing_sdk.js" integrity="sha512-lIpWd9O7x1sKwBnjNH9J7/eTBLJGkf7n9/wFnpqN+1F13ihXMO5RKTyR0DpZa/r+dIVMSGocs367wfzX+y3hew=="></script>
+  <script src="/_sdk/0179d719c431a79e.data_sdk.js" integrity="sha512-OsRvJkI5GkC3MJQcgotQYotpzrMSX415GiKKgvYdxQEEkzD/fdchShO2FMSy0PJr/tiINMXOk5Vl2zAgg6bUiA=="></script>
+  <script>
+    // === State ===
+    let tasks = [];
+    let currentPage = 1;
+    const perPage = 10;
+    let sortField = 'created_at';
+    let sortDir = -1;
+    let editingId = null;
+    let deletingRecord = null;
+
+    // === Data SDK ===
+    const dataHandler = {
+        onDataChanged(data) {
+            tasks = data;
+            updateStats();
+            renderTasks();
+        }
+    };
+
+    (async () => {
+        const r = await window.dataSdk.init(dataHandler);
+        if (!r.isOk) showToast('Lỗi kết nối dữ liệu', 'error');
+        lucide.createIcons();
+    })();
+
+    // === Stats ===
+    function updateStats() {
+        document.getElementById('stat-total').textContent = tasks.length;
+        document.getElementById('stat-new').textContent = tasks.filter(t => t.status === 'todo').length;
+        document.getElementById('stat-done').textContent = tasks.filter(t => t.status === 'done').length;
+        document.getElementById('stat-pending').textContent = tasks.filter(t => t.status === 'progress').length;
+    }
+
+    // === Render Tasks ===
+    function getFilteredTasks() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        const status = document.getElementById('filter-status').value;
+        const priority = document.getElementById('filter-priority').value;
+        let filtered = tasks.filter(t => {
+            if (search && !t.title?.toLowerCase().includes(search) && !t.description?.toLowerCase().includes(search)) return false;
+            if (status && t.status !== status) return false;
+            if (priority && t.priority !== priority) return false;
+            return true;
+        });
+        filtered.sort((a, b) => {
+            const av = a[sortField] || '';
+            const bv = b[sortField] || '';
+            return av < bv ? -sortDir : av > bv ? sortDir : 0;
+        });
+        return filtered;
+    }
+
+    function renderTasks() {
+        const filtered = getFilteredTasks();
+        const tbody = document.getElementById('task-tbody');
+        const empty = document.getElementById('empty-state');
+        const total = filtered.length;
+        const pages = Math.ceil(total / perPage) || 1;
+        if (currentPage > pages) currentPage = pages;
+        const start = (currentPage - 1) * perPage;
+        const pageItems = filtered.slice(start, start + perPage);
+
+        if (total === 0) {
+            tbody.innerHTML = '';
+            empty.classList.remove('hidden');
+        } else {
+            empty.classList.add('hidden');
+            tbody.innerHTML = pageItems.map(t => `
+                <tr class="task-row border-b border-slate-50">
+                    <td class="px-4 py-3 font-medium text-slate-800">${esc(t.title)}</td>
+                    <td class="px-4 py-3 hidden md:table-cell"><span class="px-2 py-1 rounded-lg bg-slate-100 text-xs">${catLabel(t.category)}</span></td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 rounded-lg text-xs font-medium ${statusClass(t.status)}">${statusLabel(t.status)}</span></td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 rounded-lg text-xs font-medium ${priorityClass(t.priority)}">${priorityLabel(t.priority)}</span></td>
+                    <td class="px-4 py-3 hidden lg:table-cell text-slate-600">${esc(t.assigned_to || '—')}</td>
+                    <td class="px-4 py-3 hidden lg:table-cell text-slate-600">${t.due_date || '—'}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="editTask('${t.__backendId}')" class="p-1 hover:bg-slate-100 rounded"><i data-lucide="edit-2" class="w-4 h-4 text-slate-500"></i></button>
+                        <button onclick="confirmDelete('${t.__backendId}')" class="p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        document.getElementById('page-info').textContent = `${start+1}-${Math.min(start+perPage, total)} / ${total}`;
+        document.getElementById('prev-page').disabled = currentPage <= 1;
+        document.getElementById('next-page').disabled = currentPage >= pages;
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+    function statusLabel(s) { return { todo: 'Cần làm', progress: 'Đang làm', done: 'Hoàn thành' }[s] || s; }
+    function statusClass(s) { return { todo: 'status-todo', progress: 'status-progress', done: 'status-done' }[s] || ''; }
+    function priorityLabel(p) { return { high: 'Cao', medium: 'TB', low: 'Thấp' }[p] || p; }
+    function priorityClass(p) { return { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' }[p] || ''; }
+    function catLabel(c) { return { general: 'Chung', dev: 'Dev', design: 'Design', marketing: 'Marketing', meeting: 'Họp' }[c] || c; }
+
+    // === Filters & Pagination ===
+    document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTasks(); });
+    document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; renderTasks(); });
+    document.getElementById('filter-priority').addEventListener('change', () => { currentPage = 1; renderTasks(); });
+    document.getElementById('prev-page').addEventListener('click', () => { currentPage--; renderTasks(); });
+    document.getElementById('next-page').addEventListener('click', () => { currentPage++; renderTasks(); });
+
+    // Sort
+    document.querySelectorAll('[data-sort]').forEach(th => {
+        th.addEventListener('click', () => { sortField = th.dataset.sort; sortDir *= -1; renderTasks(); });
+    });
+
+    // === CRUD ===
+    document.getElementById('add-task-btn').addEventListener('click', () => openModal());
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('task-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+    function openModal(task) {
+        editingId = task ? task.__backendId : null;
+        document.getElementById('modal-title').textContent = task ? 'Sửa công việc' : 'Thêm công việc';
+        document.getElementById('task-title').value = task?.title || '';
+        document.getElementById('task-category').value = task?.category || 'general';
+        document.getElementById('task-priority').value = task?.priority || 'low';
+        document.getElementById('task-status').value = task?.status || 'todo';
+        document.getElementById('task-due').value = task?.due_date || '';
+        document.getElementById('task-assigned').value = task?.assigned_to || '';
+        document.getElementById('task-desc').value = task?.description || '';
+        document.getElementById('task-modal').classList.remove('hidden');
+        document.getElementById('task-modal').classList.add('flex');
+    }
+
+    function closeModal() {
+        document.getElementById('task-modal').classList.add('hidden');
+        document.getElementById('task-modal').classList.remove('flex');
+    }
+
+    function editTask(id) {
+        const t = tasks.find(x => x.__backendId === id);
+        if (t) openModal(t);
+    }
+
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('[type=submit]');
+        btn.disabled = true; btn.textContent = 'Đang lưu...';
+
+        const data = {
+            title: document.getElementById('task-title').value.trim(),
+            category: document.getElementById('task-category').value,
+            priority: document.getElementById('task-priority').value,
+            status: document.getElementById('task-status').value,
+            due_date: document.getElementById('task-due').value,
+            assigned_to: document.getElementById('task-assigned').value.trim(),
+            description: document.getElementById('task-desc').value.trim(),
+            updated_at: new Date().toISOString()
+        };
+
+        let result;
+        if (editingId) {
+            const record = tasks.find(t => t.__backendId === editingId);
+            result = await window.dataSdk.update({ ...record, ...data });
+        } else {
+            if (tasks.length >= 999) { showToast('Đã đạt giới hạn 999 công việc!', 'error'); btn.disabled = false; btn.textContent = 'Lưu công việc'; return; }
+            data.created_at = new Date().toISOString();
+            result = await window.dataSdk.create(data);
+        }
+
+        if (result.isOk) { showToast(editingId ? 'Đã cập nhật!' : 'Đã thêm!', 'success'); closeModal(); }
+        else showToast('Lỗi lưu dữ liệu', 'error');
+        btn.disabled = false; btn.textContent = 'Lưu công việc';
+    });
+
+    // Delete
+    function confirmDelete(id) {
+        deletingRecord = tasks.find(t => t.__backendId === id);
+        document.getElementById('delete-confirm').classList.remove('hidden');
+        document.getElementById('delete-confirm').classList.add('flex');
+    }
+    document.getElementById('delete-cancel').addEventListener('click', () => { document.getElementById('delete-confirm').classList.add('hidden'); document.getElementById('delete-confirm').classList.remove('flex'); });
+    document.getElementById('delete-ok').addEventListener('click', async () => {
+        if (!deletingRecord) return;
+        const btn = document.getElementById('delete-ok');
+        btn.disabled = true; btn.textContent = 'Đang xóa...';
+        const r = await window.dataSdk.delete(deletingRecord);
+        if (r.isOk) showToast('Đã xóa!', 'success');
+        else showToast('Lỗi xóa', 'error');
+        btn.disabled = false; btn.textContent = 'Xóa';
+        document.getElementById('delete-confirm').classList.add('hidden');
+        document.getElementById('delete-confirm').classList.remove('flex');
+    });
+
+    // === Export/Import ===
+    document.getElementById('export-btn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tasks-backup.json'; a.click();
+    });
+    document.getElementById('import-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        try {
+            const text = await file.text();
+            const imported = JSON.parse(text);
+            if (!Array.isArray(imported)) throw new Error();
+            let count = 0;
+            for (const item of imported) {
+                if (tasks.length + count >= 999) break;
+                await window.dataSdk.create({ title: item.title || 'Imported', category: item.category || 'general', status: item.status || 'todo', priority: item.priority || 'low', description: item.description || '', assigned_to: item.assigned_to || '', due_date: item.due_date || '', created_at: item.created_at || new Date().toISOString(), updated_at: new Date().toISOString() });
+                count++;
+            }
+            showToast(`Đã nhập ${count} công việc`, 'success');
+        } catch { showToast('File không hợp lệ', 'error'); }
+        e.target.value = '';
+    });
+
+    // === Settings ===
+    document.getElementById('settings-toggle').addEventListener('click', () => { document.getElementById('settings-modal').classList.remove('hidden'); document.getElementById('settings-modal').classList.add('flex'); document.getElementById('api-key-input').value = localStorage.getItem('gemini_api_key') || ''; document.getElementById('model-select').value = localStorage.getItem('gemini_model') || 'gemini-2.5-flash'; });
+    document.getElementById('settings-close').addEventListener('click', () => { document.getElementById('settings-modal').classList.add('hidden'); document.getElementById('settings-modal').classList.remove('flex'); });
+    document.getElementById('settings-modal').addEventListener('click', e => { if (e.target === e.currentTarget) { e.target.classList.add('hidden'); e.target.classList.remove('flex'); } });
+    document.getElementById('toggle-key-vis').addEventListener('click', () => { const inp = document.getElementById('api-key-input'); inp.type = inp.type === 'password' ? 'text' : 'password'; });
+    document.getElementById('save-settings').addEventListener('click', () => { localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value.trim()); localStorage.setItem('gemini_model', document.getElementById('model-select').value); showToast('Đã lưu cài đặt', 'success'); document.getElementById('settings-modal').classList.add('hidden'); document.getElementById('settings-modal').classList.remove('flex'); });
+
+    // === AI ===
+    const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+
+    async function callGemini(prompt, idx = 0) {
+        const key = localStorage.getItem('gemini_api_key');
+        const model = localStorage.getItem('gemini_model') || MODELS[0];
+        if (!key) { showToast('Vui lòng nhập API Key trong Cài đặt', 'error'); return null; }
+        const useModel = idx === 0 ? model : (MODELS[idx] || MODELS[0]);
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 4096 } })
+            });
+            if ([500, 503].includes(res.status) && idx < MODELS.length - 1) return callGemini(prompt, idx + 1);
+            if (res.status === 401 || res.status === 403) throw new Error('API Key không hợp lệ');
+            if (res.status === 429) throw new Error('Đã hết quota API');
+            if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+            const data = await res.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        } catch (err) {
+            if (idx < MODELS.length - 1 && !err.message.includes('Key') && !err.message.includes('quota')) return callGemini(prompt, idx + 1);
+            showToast('Lỗi AI: ' + err.message, 'error'); return null;
+        }
+    }
+
+    document.getElementById('ai-panel-toggle').addEventListener('click', () => { document.getElementById('ai-panel').classList.toggle('translate-x-full'); });
+    document.getElementById('ai-panel-close').addEventListener('click', () => { document.getElementById('ai-panel').classList.add('translate-x-full'); });
+
+    document.querySelectorAll('.ai-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const type = btn.dataset.prompt;
+            const summary = JSON.stringify(tasks.map(t => ({ title: t.title, status: t.status, priority: t.priority, category: t.category, due: t.due_date, assigned: t.assigned_to })));
+            let prompt = '';
+            if (type === 'analyze') prompt = `Phân tích tổng quan danh sách công việc sau và đưa ra nhận xét chi tiết bằng tiếng Việt:\n${summary}`;
+            else if (type === 'suggest') prompt = `Dựa vào danh sách công việc sau, gợi ý thứ tự ưu tiên và lý do bằng tiếng Việt:\n${summary}`;
+            else prompt = `Tạo báo cáo tóm tắt tuần cho danh sách công việc sau bằng tiếng Việt, dùng markdown:\n${summary}`;
+
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-response').classList.add('hidden');
+            const result = await callGemini(prompt);
+            document.getElementById('ai-loading').classList.add('hidden');
+            if (result) {
+                document.getElementById('ai-response').innerHTML = marked.parse(result);
+                document.getElementById('ai-response').classList.remove('hidden');
+            }
+        });
+    });
+
+    // === Toast ===
+    function showToast(msg, type = 'success') {
+        const el = document.getElementById('toast');
+        const colors = { success: 'bg-emerald-500', error: 'bg-red-500', warning: 'bg-amber-500' };
+        el.querySelector('div').className = `px-4 py-3 rounded-xl card-shadow text-sm font-medium text-white flex items-center gap-2 fade-in ${colors[type] || colors.success}`;
+        el.querySelector('div').textContent = msg;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1acba9332bd250b',t:'MTc4Mzk5MjI3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
